@@ -1,13 +1,1182 @@
 <!doctype html>
 <html lang="fr">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#f01924" />
-    <title>Monopoly Cartes</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#070a13" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="description" content="Portfolio de realisation d'Orestis Picard. Narrative, music et commercial." />
+    <link rel="icon" type="image/jpeg" href="/assets/favicon/favicon.jpg" />
+    <link rel="apple-touch-icon" href="/assets/favicon/favicon.jpg" />
+    <link rel="canonical" href="https://orestispicard.com/" id="canonical-link" />
+    <title>Orestis Director</title>
+    <style>
+      :root {
+        --bg-top: #090b13;
+        --bg-mid: #121a2a;
+        --bg-bottom: #21140f;
+        --gold: #f5dcc0;
+        --gold-strong: #fbe9d1;
+        --blue: #dbe6f4;
+        --blue-dim: rgba(219, 230, 244, 0.82);
+        --text: rgba(247, 239, 229, 0.96);
+        --line: rgba(232, 180, 116, 0.22);
+        --line-blue: rgba(176, 195, 223, 0.2);
+        --panel: rgba(8, 10, 18, 0.82);
+        --shadow-gold: 0 0 24px rgba(255, 191, 119, 0.32), 0 0 72px rgba(255, 160, 69, 0.14);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        min-height: 100%;
+        scroll-behavior: smooth;
+        background-color: #070a13;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        min-height: 100dvh;
+        color: var(--text);
+        font-family: Georgia, "Times New Roman", serif;
+        background:
+          url("/assets/backgrounds/image-de-fond05_1.1.3.png") center bottom / cover no-repeat,
+          linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 58%, #111621 78%, var(--bg-bottom) 100%);
+        overflow-x: hidden;
+        background-attachment: fixed;
+        background-color: #070a13;
+      }
+
+      body::before,
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+      }
+
+      body::before {
+        background: none;
+        z-index: 0;
+      }
+
+      body::after {
+        background: none;
+        z-index: 1;
+      }
+
+      .app {
+        position: relative;
+        z-index: 3;
+        min-height: 100vh;
+        opacity: 1;
+        transition: opacity 0.45s ease;
+      }
+
+      .app.is-hidden {
+        opacity: 0;
+      }
+
+      .loading-screen {
+        position: fixed;
+        inset: 0;
+        z-index: 20;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background:
+          radial-gradient(circle at 50% 80%, rgba(214, 157, 76, 0.08), transparent 18%),
+          linear-gradient(180deg, rgba(9, 11, 19, 0.96), rgba(12, 18, 30, 0.98));
+        transition: opacity 0.45s ease, visibility 0.45s ease;
+      }
+
+      .loading-screen.is-hidden {
+        opacity: 0;
+        visibility: hidden;
+      }
+
+      .loading-screen__inner {
+        text-align: center;
+      }
+
+      .loading-screen__logo {
+        width: min(320px, 68vw);
+        margin: 0 auto;
+      }
+
+      .loading-screen__logo img {
+        display: block;
+        width: 100%;
+        height: auto;
+        object-fit: contain;
+      }
+
+      .loading-screen__label {
+        margin-top: 18px;
+        color: var(--blue);
+        text-transform: uppercase;
+        letter-spacing: 0.42em;
+        font-size: 0.72rem;
+      }
+
+      .page {
+        min-height: 100vh;
+        display: none;
+      }
+
+      .page.active {
+        display: block;
+      }
+
+      .page-shell {
+        min-height: 100vh;
+        min-height: 100dvh;
+        padding: 28px 38px 30px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .topbar {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: start;
+        gap: 24px;
+      }
+
+      .brand {
+        color: var(--blue);
+        text-decoration: none;
+        text-transform: uppercase;
+        letter-spacing: 0.34em;
+        font-size: 0.82rem;
+        opacity: 0.92;
+      }
+
+      .brand {
+        justify-self: start;
+      }
+
+      .brand--logo {
+        display: inline-flex;
+        align-items: center;
+      }
+
+      .brand--logo img {
+        display: block;
+        width: auto;
+        height: 2.2rem;
+        object-fit: contain;
+        filter: none;
+      }
+
+      .nav {
+        display: flex;
+        justify-content: center;
+        gap: 34px;
+        flex-wrap: wrap;
+      }
+
+      .nav a {
+        position: relative;
+        color: var(--blue);
+        text-decoration: none;
+        text-transform: uppercase;
+        letter-spacing: 0.32em;
+        font-size: 0.74rem;
+        padding: 8px 0 12px;
+      }
+
+      .nav a.active {
+        color: var(--gold);
+        text-shadow: 0 0 8px rgba(248, 233, 212, 0.54), 0 0 24px rgba(220, 164, 85, 0.66), 0 0 64px rgba(169, 108, 46, 0.26);
+      }
+
+      .nav a.active::after,
+      .nav a:hover::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--gold), transparent);
+        box-shadow: 0 0 16px rgba(219, 166, 90, 0.32);
+      }
+
+      .home {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        min-height: 100vh;
+        padding: 24px 22px 24px;
+      }
+
+      .home__inner {
+        width: min(1200px, calc(100vw - 44px));
+        min-height: calc(100vh - 48px);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 2vh 0 10vh;
+        margin-inline: auto;
+      }
+
+      .home__center {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        justify-content: center;
+        flex: 1;
+        transform: translateY(-4.5vh);
+      }
+
+      .home__logo {
+        margin: 0;
+        width: min(700px, 78vw);
+      }
+
+      .home__logo img {
+        display: block;
+        width: 100%;
+        height: auto;
+        object-fit: contain;
+        filter: none;
+      }
+
+      .home__director {
+        margin-top: 6px;
+        color: var(--blue);
+        text-transform: uppercase;
+        letter-spacing: 0.56em;
+        font-size: 0.78rem;
+        font-weight: 300;
+        text-shadow: 0 0 8px rgba(240, 233, 223, 0.36), 0 0 20px rgba(135, 163, 205, 0.26);
+      }
+
+      .home__menu {
+        margin-top: 72px;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(180px, 1fr));
+        align-items: start;
+        width: min(860px, 100%);
+      }
+
+      .home__menu-item {
+        position: relative;
+        padding: 0 36px;
+      }
+
+      .home__menu-item + .home__menu-item::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 6px;
+        bottom: 34px;
+        width: 1px;
+        background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.18), transparent);
+      }
+
+      .home__link {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        color: var(--blue);
+        text-decoration: none;
+        text-transform: uppercase;
+        letter-spacing: 0.38em;
+        font-size: 0.74rem;
+        text-shadow: 0 0 8px rgba(239, 232, 223, 0.34), 0 0 18px rgba(124, 152, 194, 0.24);
+      }
+
+      .home__link-name {
+        color: var(--blue);
+        opacity: 0.98;
+        text-shadow: 0 0 8px rgba(239, 232, 223, 0.28), 0 0 16px rgba(124, 152, 194, 0.2);
+      }
+
+      .home__link:hover .home__link-name,
+      .home__link:focus-visible .home__link-name {
+        color: var(--gold);
+        text-shadow: 0 0 10px rgba(250, 241, 226, 0.7), 0 0 30px rgba(221, 163, 84, 0.78), 0 0 72px rgba(172, 110, 46, 0.28);
+      }
+
+      .home__line {
+        margin-top: 12px;
+        width: 156px;
+        height: 1px;
+        background: linear-gradient(90deg, rgba(219, 230, 244, 0.1), rgba(219, 230, 244, 0.95), rgba(219, 230, 244, 0.1));
+        box-shadow: 0 0 12px rgba(140, 164, 198, 0.16);
+      }
+
+      .home__link:hover .home__line,
+      .home__link:focus-visible .home__line {
+        background: linear-gradient(90deg, rgba(232, 180, 116, 0.1), rgba(232, 180, 116, 1), rgba(232, 180, 116, 0.1));
+        box-shadow: 0 0 22px rgba(214, 157, 76, 0.54);
+      }
+
+      .listing {
+        max-width: 1420px;
+        margin: 0 auto;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+      }
+
+      .listing__hero {
+        padding-top: 22px;
+        text-align: center;
+      }
+
+      .listing__title-image {
+        margin: 28px auto 0;
+        width: min(900px, 72vw);
+      }
+
+      .listing__title-image img {
+        display: block;
+        width: 100%;
+        height: auto;
+        object-fit: contain;
+      }
+
+      .project-grid {
+        margin-top: 34px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 36px 42px;
+      }
+
+      .project-card {
+        background: transparent;
+        border: 0;
+        padding: 0;
+        color: inherit;
+        cursor: pointer;
+        text-align: left;
+      }
+
+      .project-thumb {
+        position: relative;
+        aspect-ratio: 1.7 / 1;
+        overflow: hidden;
+        border: 1px solid rgba(255, 206, 154, 0.08);
+        background:
+          linear-gradient(180deg, rgba(7, 8, 14, 0.16), rgba(7, 8, 14, 0.28)),
+          var(--thumb);
+        box-shadow:
+          inset 0 0 50px rgba(0, 0, 0, 0.42),
+          0 0 16px rgba(255, 171, 82, 0.04);
+      }
+
+      .project-thumb::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          linear-gradient(180deg, rgba(255, 206, 150, 0.08), transparent 45%, rgba(3, 4, 8, 0.34)),
+          linear-gradient(110deg, transparent 0%, rgba(255, 255, 255, 0.08) 46%, transparent 62%);
+        transform: translateX(-12%);
+        animation: shimmer 5.2s linear infinite;
+        mix-blend-mode: screen;
+      }
+
+      .project-thumb--media::after {
+        display: none;
+      }
+
+      .project-thumb video,
+      .project-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .project-title {
+        margin: 10px 0 0;
+        color: var(--gold);
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        font-size: 1.1rem;
+        font-weight: 300;
+        text-shadow: 0 0 8px rgba(247, 238, 225, 0.48), 0 0 18px rgba(211, 156, 79, 0.44);
+      }
+
+      .project-meta {
+        margin-top: 8px;
+        color: var(--blue);
+        text-transform: uppercase;
+        letter-spacing: 0.44em;
+        font-size: 0.68rem;
+      }
+
+      .site-footer {
+        margin-top: auto;
+        padding-top: 28px;
+        padding-bottom: 10px;
+        text-align: center;
+      }
+
+      .site-footer a {
+        color: var(--blue);
+        text-decoration: none;
+        text-transform: uppercase;
+        letter-spacing: 0.32em;
+        font-size: 0.72rem;
+      }
+
+      .site-footer a:hover,
+      .site-footer a:focus-visible {
+        color: var(--gold);
+      }
+
+      .coming-soon {
+        margin: 12vh auto 0;
+        text-align: center;
+        color: var(--gold);
+        text-transform: uppercase;
+        letter-spacing: 0.34em;
+        font-size: clamp(1.2rem, 2.6vw, 2rem);
+        text-shadow: 0 0 10px rgba(247, 238, 225, 0.42), 0 0 28px rgba(211, 156, 79, 0.38);
+      }
+
+      .modal {
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background: rgba(6, 8, 14, 0.88);
+        z-index: 10;
+      }
+
+      .modal.open {
+        display: flex;
+      }
+
+      .modal__panel {
+        position: relative;
+        width: min(1120px, 100%);
+        min-height: 490px;
+        max-height: min(92vh, 920px);
+        padding: 30px;
+        border: 1px solid rgba(240, 190, 126, 0.36);
+        background: linear-gradient(180deg, rgba(10, 12, 20, 0.98), rgba(7, 8, 14, 0.98));
+        box-shadow: 0 0 0 1px rgba(255, 222, 184, 0.05);
+        overflow: auto;
+      }
+
+      .modal__close {
+        position: absolute;
+        top: 16px;
+        right: 20px;
+        border: 0;
+        background: transparent;
+        color: var(--gold);
+        font-size: 2.2rem;
+        line-height: 1;
+        cursor: pointer;
+        text-shadow: 0 0 10px rgba(255, 244, 230, 0.64), 0 0 32px rgba(255, 145, 24, 0.96), 0 0 92px rgba(255, 102, 0, 0.44);
+      }
+
+      .modal__layout {
+        display: grid;
+        grid-template-columns: 1.55fr 0.65fr;
+        gap: 26px;
+        align-items: start;
+      }
+
+      .modal__video {
+        aspect-ratio: 16 / 9;
+        border: 1px solid rgba(255, 206, 154, 0.12);
+        background: #05070d;
+        overflow: hidden;
+      }
+
+      .modal__video iframe {
+        width: 100%;
+        height: 100%;
+        border: 0;
+        display: block;
+      }
+
+      .modal__title {
+        position: relative;
+        isolation: isolate;
+        margin: 28px 0 0;
+        color: #f8e4c7;
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+        font-size: 2.1rem;
+        font-weight: 300;
+        text-shadow:
+          0 0 1px rgba(251, 241, 225, 0.86),
+          0 0 6px rgba(240, 205, 151, 0.68),
+          0 0 14px rgba(221, 164, 84, 0.56),
+          0 0 22px rgba(171, 109, 43, 0.22);
+      }
+
+      .modal__title::before,
+      .modal__title::after {
+        content: attr(data-text);
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+
+      .modal__title::before {
+        z-index: -1;
+        color: rgba(230, 180, 103, 0.66);
+        filter: blur(4px);
+        opacity: 0.84;
+        transform: scale(1.004);
+      }
+
+      .modal__title::after {
+        z-index: -2;
+        color: rgba(179, 118, 55, 0.28);
+        filter: blur(10px);
+        opacity: 0.58;
+        transform: scale(1.012);
+      }
+
+      .modal__meta {
+        margin-top: 14px;
+        color: var(--blue);
+        text-transform: uppercase;
+        letter-spacing: 0.42em;
+        font-size: 0.66rem;
+      }
+
+      .modal__desc {
+        margin: 28px 0 0;
+        color: rgba(220, 224, 235, 0.72);
+        font-size: 0.9rem;
+        line-height: 2;
+      }
+
+      @keyframes shimmer {
+        0% {
+          transform: translateX(-18%);
+        }
+        100% {
+          transform: translateX(18%);
+        }
+      }
+
+      @media (max-width: 1100px) {
+        .project-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .modal__layout {
+          grid-template-columns: 1fr;
+        }
+
+        .modal__title {
+          margin-top: 0;
+        }
+      }
+
+      @media (max-width: 760px) {
+        html,
+        body {
+          min-height: 100%;
+          background: #070a13;
+        }
+
+        body {
+          background-image: none;
+          background-attachment: scroll;
+        }
+
+        body::before {
+          background:
+            url("/assets/backgrounds/image-de-fond05_1.1.3.png") center bottom / cover no-repeat,
+            linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 58%, #111621 78%, var(--bg-bottom) 100%);
+          background-attachment: scroll;
+          transform: translateZ(0);
+        }
+
+        .page-shell {
+          min-height: 100dvh;
+          padding:
+            max(10px, env(safe-area-inset-top))
+            18px
+            max(18px, env(safe-area-inset-bottom))
+            18px;
+        }
+
+        .topbar {
+          grid-template-columns: 1fr;
+          justify-items: center;
+          gap: 10px;
+        }
+
+        .listing {
+          padding-top: calc(max(14px, env(safe-area-inset-top)) + 104px);
+        }
+
+        .listing > .topbar {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          z-index: 9;
+          padding:
+            max(14px, env(safe-area-inset-top))
+            18px
+            18px;
+          margin: 0;
+          background: linear-gradient(180deg, rgba(6, 9, 16, 0.985), rgba(6, 9, 16, 0.95) 68%, rgba(6, 9, 16, 0.82) 88%, rgba(6, 9, 16, 0));
+        }
+
+        .brand,
+        .director-tag {
+          justify-self: center;
+        }
+
+        .home__menu,
+        .project-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .home__menu-item + .home__menu-item::before {
+          display: none;
+        }
+
+        .home__menu-item {
+          padding: 0;
+        }
+
+        .home__link {
+          padding: 8px 0;
+        }
+
+        .home__line {
+          width: 220px;
+        }
+
+        .listing__title-image {
+          width: min(900px, 88vw);
+        }
+
+        .listing__hero {
+          padding-top: 12px;
+        }
+
+        .project-grid {
+          gap: 28px;
+        }
+
+        .project-thumb {
+          aspect-ratio: 1.48 / 1;
+        }
+
+        .home__center {
+          transform: translateY(-2vh);
+        }
+
+        .home__logo {
+          transform: translateX(-8px);
+        }
+
+        .site-footer {
+          padding-bottom: max(10px, env(safe-area-inset-bottom));
+        }
+
+        .coming-soon {
+          margin-top: 18vh;
+          font-size: 1rem;
+          letter-spacing: 0.26em;
+        }
+
+        .modal {
+          align-items: flex-start;
+          padding:
+            max(10px, env(safe-area-inset-top))
+            10px
+            max(10px, env(safe-area-inset-bottom));
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
+        }
+
+        .modal__panel {
+          width: min(100%, 560px);
+          min-height: 0;
+          max-height: calc(100dvh - max(20px, env(safe-area-inset-top)) - max(20px, env(safe-area-inset-bottom)));
+          padding: 50px 14px 18px;
+          overflow-x: hidden;
+        }
+
+        .modal__close {
+          top: 8px;
+          right: 12px;
+          font-size: 2rem;
+        }
+
+        .modal__layout {
+          gap: 18px;
+        }
+
+        .modal__video {
+          width: 100%;
+          max-width: 100%;
+          aspect-ratio: 16 / 9;
+        }
+
+        .modal__title {
+          margin-top: 0;
+          font-size: 1.4rem;
+          letter-spacing: 0.12em;
+        }
+
+        .modal__meta {
+          font-size: 0.58rem;
+          letter-spacing: 0.28em;
+          line-height: 1.8;
+        }
+
+        .modal__desc {
+          margin-top: 18px;
+          font-size: 0.82rem;
+          line-height: 1.72;
+        }
+
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
+    <div class="loading-screen" id="loading-screen" aria-hidden="true">
+      <div class="loading-screen__inner">
+        <div class="loading-screen__logo">
+          <img src="/assets/logos/orestis_01_A.png" alt="Orestis" />
+        </div>
+        <div class="loading-screen__label">Loading</div>
+      </div>
+    </div>
+
+    <div class="app is-hidden" id="site-app">
+      <main id="app"></main>
+    </div>
+
+    <div class="modal" id="project-modal" aria-hidden="true" role="dialog" aria-modal="true">
+      <div class="modal__panel">
+        <button class="modal__close" id="modal-close" type="button" aria-label="Fermer">×</button>
+        <div class="modal__layout">
+          <div class="modal__video" id="modal-video-shell">
+            <iframe
+              id="modal-video"
+              src="about:blank"
+              title="Video project"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen
+            ></iframe>
+          </div>
+          <div>
+            <h2 class="modal__title" id="modal-title"></h2>
+            <div class="modal__meta" id="modal-meta"></div>
+            <div class="modal__desc" id="modal-desc"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/site-data.js"></script>
+    <script>
+      const site = window.SITE_DATA || {};
+
+      const appShell = document.getElementById("site-app");
+      const loadingScreen = document.getElementById("loading-screen");
+      const app = document.getElementById("app");
+      const modal = document.getElementById("project-modal");
+      const modalVideo = document.getElementById("modal-video");
+      const modalVideoShell = document.getElementById("modal-video-shell");
+      const modalTitle = document.getElementById("modal-title");
+      const modalMeta = document.getElementById("modal-meta");
+      const modalDesc = document.getElementById("modal-desc");
+      const modalClose = document.getElementById("modal-close");
+      const canonicalLink = document.getElementById("canonical-link");
+      const siteOrigin = "https://orestispicard.com";
+      const routePaths = {
+        home: "/",
+        narrative: "/narrative",
+        music: "/music",
+        commercial: "/commercial",
+      };
+      let modalHistoryMode = null;
+
+      const criticalAssets = [
+        "/assets/backgrounds/image-de-fond05_1.1.3.png",
+        "/assets/logos/orestis_01_A.png",
+        "/assets/logos/Narrative_01_A.png",
+        "/assets/logos/Music_01_A.png",
+        "/assets/logos/Commercial_01_A.png",
+      ];
+      let thumbnailWarmupStarted = false;
+
+      function preloadImage(source) {
+        return new Promise((resolve) => {
+          const image = new Image();
+          image.onload = () => resolve(source);
+          image.onerror = () => resolve(source);
+          image.src = source;
+        });
+      }
+
+      function preloadVideo(source, poster) {
+        return new Promise((resolve) => {
+          const video = document.createElement("video");
+          video.preload = "metadata";
+          video.muted = true;
+          video.playsInline = true;
+          video.onloadeddata = () => resolve(source);
+          video.oncanplay = () => resolve(source);
+          video.onerror = () => resolve(source);
+          if (poster) {
+            video.poster = poster;
+          }
+          video.src = source;
+          video.load();
+          setTimeout(() => resolve(source), 5000);
+        });
+      }
+
+      function getAllProjects() {
+        return ["narrative", "music", "commercial"]
+          .flatMap((category) => (site[category] && Array.isArray(site[category].projects) ? site[category].projects : []));
+      }
+
+      function warmProjectAssets() {
+        if (thumbnailWarmupStarted) {
+          return;
+        }
+
+        thumbnailWarmupStarted = true;
+
+        const jobs = [];
+        getAllProjects().forEach((project) => {
+          if (project.thumbnailImage) {
+            jobs.push(preloadImage(project.thumbnailImage));
+          }
+          if (project.thumbnailVideo) {
+            jobs.push(preloadVideo(project.thumbnailVideo, project.thumbnailImage || ""));
+          }
+        });
+
+        Promise.allSettled(jobs);
+      }
+
+      async function bootSite() {
+        await Promise.all(criticalAssets.map(preloadImage));
+        render();
+        appShell.classList.remove("is-hidden");
+        loadingScreen.classList.add("is-hidden");
+        warmProjectAssets();
+      }
+
+      function getRoutePath(route) {
+        return routePaths[route] || "/";
+      }
+
+      function normalizeSlug(value) {
+        return decodeURIComponent(String(value || "")).trim().toLowerCase();
+      }
+
+      function getProjectPath(route, slug) {
+        return `${getRoutePath(route)}/${encodeURIComponent(slug)}`;
+      }
+
+      function getLocationState() {
+        const path = (window.location.pathname || "/").replace(/\/+$/, "") || "/";
+        const segments = path.split("/").filter(Boolean);
+
+        if (segments.length === 0) {
+          return { route: "home", projectSlug: null };
+        }
+
+        const [category, projectSlug] = segments;
+        if (category === "narrative" || category === "music" || category === "commercial") {
+          return {
+            route: category,
+            projectSlug: projectSlug ? decodeURIComponent(projectSlug) : null,
+          };
+        }
+
+        return { route: "home", projectSlug: null };
+      }
+
+      function findProject(route, slug) {
+        const projects = site[route] && Array.isArray(site[route].projects) ? site[route].projects : [];
+        return projects.find((project) => normalizeSlug(project.slug) === normalizeSlug(slug)) || null;
+      }
+
+      function updateSeo(route, project = null) {
+        const titles = {
+          home: "Orestis Director",
+          narrative: "Narrative | Orestis Director",
+          music: "Music | Orestis Director",
+          commercial: "Commercial | Orestis Director",
+        };
+
+        if (project && route !== "home") {
+          document.title = `${project.title} | ${titles[route] || "Orestis Director"}`;
+          canonicalLink.href = `${siteOrigin}${getProjectPath(route, project.slug)}`;
+          return;
+        }
+
+        document.title = titles[route] || titles.home;
+        canonicalLink.href = `${siteOrigin}${getRoutePath(route)}`;
+      }
+
+      function navigateTo(route) {
+        const targetPath = getRoutePath(route);
+        if (window.location.pathname !== targetPath) {
+          window.history.pushState({}, "", targetPath);
+        }
+        hideModal();
+        modalHistoryMode = null;
+        render();
+      }
+
+      function navigateToProject(route, project) {
+        const targetPath = getProjectPath(route, project.slug);
+        if (window.location.pathname !== targetPath) {
+          window.history.pushState({}, "", targetPath);
+        }
+        modalHistoryMode = "pushed";
+        openModal(project, route, { historyUpdate: false });
+      }
+
+      function createTopbar(activeRoute) {
+        return `
+          <div class="topbar">
+            <a class="brand brand--logo" href="/" data-route="home" aria-label="Orestis home">
+              <img src="/assets/logos/orestis_01_A.png" alt="Orestis" />
+            </a>
+            <nav class="nav">
+              <a class="${activeRoute === "narrative" ? "active" : ""}" href="/narrative" data-route="narrative">Narrative</a>
+              <a class="${activeRoute === "music" ? "active" : ""}" href="/music" data-route="music">Music</a>
+              <a class="${activeRoute === "commercial" ? "active" : ""}" href="/commercial" data-route="commercial">Commercial</a>
+            </nav>
+            <div></div>
+          </div>
+        `;
+      }
+
+      function buildProjectThumbnail(project) {
+        const fallbackStyle = project.thumbnailStyle
+          ? `linear-gradient(180deg, rgba(7, 8, 14, 0.16), rgba(7, 8, 14, 0.28)), ${project.thumbnailStyle}`
+          : "linear-gradient(180deg, rgba(18, 20, 31, 0.3), rgba(7, 8, 14, 0.78))";
+
+        if (project.thumbnailVideo) {
+          return `
+            <div class="project-thumb project-thumb--media" style="background:${fallbackStyle}">
+              <video autoplay muted loop playsinline preload="metadata" poster="${project.thumbnailImage || ""}">
+                <source src="${project.thumbnailVideo}" type="${project.thumbnailVideoType || "video/mp4"}" />
+              </video>
+            </div>
+          `;
+        }
+
+        if (project.thumbnailImage) {
+          return `
+            <div class="project-thumb project-thumb--media" style="background:${fallbackStyle}">
+              <img src="${project.thumbnailImage}" alt="${project.title}" loading="lazy" />
+            </div>
+          `;
+        }
+
+        return `<div class="project-thumb" style="background:${fallbackStyle}"></div>`;
+      }
+
+      function renderHome() {
+        app.innerHTML = `
+          <section class="page active home">
+            <div class="home__inner">
+              <div class="home__center">
+                <div class="home__logo" aria-label="Orestis">
+                  <img src="/assets/logos/orestis_01_A.png" alt="Orestis" />
+                </div>
+                <div class="home__director">DIRECTOR</div>
+                <div class="home__menu">
+                  <div class="home__menu-item">
+                    <a class="home__link" href="/narrative" data-route="narrative">
+                      <span class="home__link-name">NARATIVE</span>
+                      <span class="home__line"></span>
+                    </a>
+                  </div>
+                  <div class="home__menu-item">
+                    <a class="home__link" href="/music" data-route="music">
+                      <span class="home__link-name">MUSIC</span>
+                      <span class="home__line"></span>
+                    </a>
+                  </div>
+                  <div class="home__menu-item">
+                    <a class="home__link" href="/commercial" data-route="commercial">
+                      <span class="home__link-name">COMMERCIAL</span>
+                      <span class="home__line"></span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+              <div class="site-footer">
+                <a href="https://www.instagram.com/orestispicard/" target="_blank" rel="noreferrer">Instagram</a>
+              </div>
+            </div>
+          </section>
+        `;
+      }
+
+      function bindRouteLinks() {
+        app.querySelectorAll("[data-route]").forEach((link) => {
+          link.addEventListener("click", (event) => {
+            event.preventDefault();
+            navigateTo(link.dataset.route);
+          });
+        });
+      }
+
+      function renderListing(route) {
+        const page = site[route];
+        const cards = page.projects
+          .map(
+            (project) => `
+              <button
+                class="project-card"
+                type="button"
+                data-project="${encodeURIComponent(JSON.stringify(project))}"
+              >
+                ${buildProjectThumbnail(project)}
+                <div class="project-title">${project.title}</div>
+                <div class="project-meta">${project.year} / ${project.type}</div>
+              </button>
+            `,
+          )
+          .join("");
+        const commercialMessage = route === "commercial" ? `<div class="coming-soon">Coming Soon</div>` : "";
+
+        app.innerHTML = `
+          <section class="page active">
+            <div class="page-shell">
+              <div class="listing">
+                ${createTopbar(route)}
+                <div class="listing__hero">
+                  <div class="listing__title-image" aria-label="${page.title}">
+                    <img src="${page.titleImage}" alt="${page.title}" />
+                  </div>
+                </div>
+                ${commercialMessage}
+                <div class="project-grid">${cards}</div>
+                <div class="site-footer">
+                  <a href="https://www.instagram.com/orestispicard/" target="_blank" rel="noreferrer">Instagram</a>
+                </div>
+              </div>
+            </div>
+          </section>
+        `;
+
+        bindRouteLinks();
+        app.querySelectorAll(".project-card").forEach((button) => {
+          button.addEventListener("click", () => {
+            const data = JSON.parse(decodeURIComponent(button.dataset.project));
+            navigateToProject(route, data);
+          });
+        });
+      }
+
+      function buildYouTubeEmbedUrl(youtubeId, autoplay = true) {
+        const autoplayValue = autoplay ? "1" : "0";
+        return `https://www.youtube.com/embed/${youtubeId}?autoplay=${autoplayValue}&rel=0&modestbranding=1&playsinline=1`;
+      }
+
+      function openModal(project, route, options = {}) {
+        if (options.historyUpdate !== false) {
+          window.history.pushState({}, "", getProjectPath(route, project.slug));
+          modalHistoryMode = "pushed";
+        }
+        modalTitle.textContent = project.title;
+        modalTitle.setAttribute("data-text", project.title);
+        modalMeta.textContent = `${project.year} / ${project.type} / ${project.duration}`;
+        modalDesc.textContent = project.description;
+        modalVideoShell.style.setProperty("--modal-thumb", project.thumbnailStyle || "linear-gradient(180deg, rgba(10, 12, 20, 0.5), rgba(7, 8, 14, 0.9))");
+        modalVideo.src = buildYouTubeEmbedUrl(project.youtubeId, options.autoplay !== false);
+        modal.classList.add("open");
+        modal.setAttribute("aria-hidden", "false");
+        document.body.style.overflow = "hidden";
+        updateSeo(route, project);
+      }
+
+      function hideModal() {
+        modal.classList.remove("open");
+        modal.setAttribute("aria-hidden", "true");
+        modalVideo.src = "about:blank";
+        document.body.style.overflow = "";
+      }
+
+      function closeModal() {
+        const locationState = getLocationState();
+        if (locationState.route !== "home" && locationState.projectSlug) {
+          hideModal();
+          modalHistoryMode = null;
+          window.history.replaceState({}, "", getRoutePath(locationState.route));
+          render();
+          return;
+        }
+
+        hideModal();
+        modalHistoryMode = null;
+        updateSeo(locationState.route);
+      }
+
+      function render() {
+        const locationState = getLocationState();
+        const route = locationState.route;
+
+        if (route === "narrative" || route === "music" || route === "commercial") {
+          renderListing(route);
+          const project = locationState.projectSlug ? findProject(route, locationState.projectSlug) : null;
+          if (locationState.projectSlug && project) {
+            modalHistoryMode = modalHistoryMode || "direct";
+            openModal(project, route, { historyUpdate: false, autoplay: false });
+          } else {
+            if (locationState.projectSlug && !project) {
+              window.history.replaceState({}, "", getRoutePath(route));
+            }
+            hideModal();
+            updateSeo(route);
+          }
+        } else {
+          hideModal();
+          updateSeo("home");
+          renderHome();
+          bindRouteLinks();
+        }
+      }
+
+      modalClose.addEventListener("click", closeModal);
+      modal.addEventListener("click", (event) => {
+        if (event.target === modal) {
+          closeModal();
+        }
+      });
+
+      window.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          closeModal();
+        }
+      });
+
+      window.addEventListener("popstate", render);
+      bootSite();
+    </script>
   </body>
 </html>
