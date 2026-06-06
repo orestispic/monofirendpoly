@@ -329,47 +329,66 @@
         flex: 1;
       }
 
-      .listing__hero {
-        padding-top: 22px;
-        text-align: center;
+      .page-shell--gallery {
+        padding-left: 0;
+        padding-right: 0;
       }
 
-      .listing__title-image {
-        margin: 28px auto 0;
-        width: min(900px, 72vw);
-      }
-
-      .listing__title-image img {
-        display: block;
-        width: 100%;
-        height: auto;
-        object-fit: contain;
+      .listing--gallery {
+        max-width: none;
+        width: 100vw;
+        margin-left: calc(50% - 50vw);
+        margin-right: calc(50% - 50vw);
+        padding: 0 20px;
       }
 
       .project-grid {
-        margin-top: 34px;
+        margin-top: 12px;
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 36px 42px;
+        grid-auto-flow: column;
+        grid-auto-columns: 68vw;
+        gap: 24px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding: 10px 0 4px;
+        overscroll-behavior-x: contain;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        flex: 1;
+        align-items: start;
+        cursor: grab;
+      }
+
+      .project-grid::-webkit-scrollbar {
+        display: none;
+      }
+
+      .project-grid.is-dragging {
+        cursor: grabbing;
+        user-select: none;
       }
 
       .project-card {
+        display: block;
         background: transparent;
         border: 0;
         padding: 0;
         color: inherit;
         cursor: pointer;
         text-align: left;
+        width: 100%;
       }
 
       .project-thumb {
         position: relative;
-        aspect-ratio: 1.7 / 1;
+        width: 100%;
+        aspect-ratio: 16 / 9;
         overflow: hidden;
         border: 1px solid rgba(255, 206, 154, 0.08);
         background:
           linear-gradient(180deg, rgba(7, 8, 14, 0.16), rgba(7, 8, 14, 0.28)),
-          var(--thumb);
+          var(--thumb),
+          #05070d;
         box-shadow:
           inset 0 0 50px rgba(0, 0, 0, 0.42),
           0 0 16px rgba(255, 171, 82, 0.04);
@@ -397,24 +416,6 @@
         height: 100%;
         object-fit: cover;
         display: block;
-      }
-
-      .project-title {
-        margin: 10px 0 0;
-        color: var(--gold);
-        text-transform: uppercase;
-        letter-spacing: 0.2em;
-        font-size: 1.1rem;
-        font-weight: 300;
-        text-shadow: 0 0 8px rgba(247, 238, 225, 0.48), 0 0 18px rgba(211, 156, 79, 0.44);
-      }
-
-      .project-meta {
-        margin-top: 8px;
-        color: var(--blue);
-        text-transform: uppercase;
-        letter-spacing: 0.44em;
-        font-size: 0.68rem;
       }
 
       .site-footer {
@@ -573,10 +574,6 @@
       }
 
       @media (max-width: 1100px) {
-        .project-grid {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-
         .modal__layout {
           grid-template-columns: 1fr;
         }
@@ -644,8 +641,7 @@
           justify-self: center;
         }
 
-        .home__menu,
-        .project-grid {
+        .home__menu {
           grid-template-columns: 1fr;
         }
 
@@ -665,20 +661,15 @@
           width: 220px;
         }
 
-        .listing__title-image {
-          width: min(900px, 88vw);
-        }
-
-        .listing__hero {
-          padding-top: 12px;
-        }
-
         .project-grid {
-          gap: 28px;
+          grid-auto-columns: 82vw;
+          gap: 18px;
+          padding-bottom: 18px;
+          flex: initial;
         }
 
         .project-thumb {
-          aspect-ratio: 1.48 / 1;
+          aspect-ratio: 1.42 / 1;
         }
 
         .home__center {
@@ -806,6 +797,7 @@
       const modalClose = document.getElementById("modal-close");
       const canonicalLink = document.getElementById("canonical-link");
       const siteOrigin = "https://orestispicard.com";
+      let cleanupGalleryScroll = null;
       const routePaths = {
         home: "/",
         narrative: "/narrative",
@@ -1045,6 +1037,49 @@
         });
       }
 
+      function bindHorizontalProjectScroll() {
+        const grid = app.querySelector(".project-grid");
+        if (!grid) {
+          return;
+        }
+
+        if (cleanupGalleryScroll) {
+          cleanupGalleryScroll();
+          cleanupGalleryScroll = null;
+        }
+
+        const wheelHandler = (event) => {
+          if (!grid.isConnected || modal.classList.contains("open") || event.ctrlKey) {
+            return;
+          }
+
+          const locationState = getLocationState();
+          if (locationState.route !== "narrative" && locationState.route !== "music" && locationState.route !== "commercial") {
+            return;
+          }
+
+          const rawDelta = Math.abs(event.deltaY) >= Math.abs(event.deltaX) ? event.deltaY : event.deltaX;
+          if (!rawDelta) {
+            return;
+          }
+
+          let amount = rawDelta;
+          if (event.deltaMode === 1) {
+            amount *= 32;
+          } else if (event.deltaMode === 2) {
+            amount *= grid.clientWidth;
+          }
+
+          event.preventDefault();
+          grid.scrollLeft += amount;
+        };
+
+        document.addEventListener("wheel", wheelHandler, { passive: false });
+        cleanupGalleryScroll = () => {
+          document.removeEventListener("wheel", wheelHandler);
+        };
+      }
+
       function renderListing(route) {
         const page = site[route];
         const cards = page.projects
@@ -1056,8 +1091,6 @@
                 data-project="${encodeURIComponent(JSON.stringify(project))}"
               >
                 ${buildProjectThumbnail(project)}
-                <div class="project-title">${project.title}</div>
-                <div class="project-meta">${project.year} / ${project.type}</div>
               </button>
             `,
           )
@@ -1066,14 +1099,9 @@
 
         app.innerHTML = `
           <section class="page active">
-            <div class="page-shell">
-              <div class="listing">
+            <div class="page-shell page-shell--gallery">
+              <div class="listing listing--gallery">
                 ${createTopbar(route)}
-                <div class="listing__hero">
-                  <div class="listing__title-image" aria-label="${page.title}">
-                    <img src="${page.titleImage}" alt="${page.title}" />
-                  </div>
-                </div>
                 ${commercialMessage}
                 <div class="project-grid">${cards}</div>
                 <div class="site-footer">
@@ -1085,6 +1113,7 @@
         `;
 
         bindRouteLinks();
+        bindHorizontalProjectScroll();
         app.querySelectorAll(".project-card").forEach((button) => {
           button.addEventListener("click", () => {
             const data = JSON.parse(decodeURIComponent(button.dataset.project));
@@ -1138,6 +1167,11 @@
       }
 
       function render() {
+        if (cleanupGalleryScroll) {
+          cleanupGalleryScroll();
+          cleanupGalleryScroll = null;
+        }
+
         const locationState = getLocationState();
         const route = locationState.route;
 
